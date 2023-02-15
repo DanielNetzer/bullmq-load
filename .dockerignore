@@ -1,0 +1,15 @@
+node_modules
+documentation
+coverage
+.github
+npm-debug.log
+.prettierrc
+.env
+jest.config.js
+README.md
+CONTRIBUTING.md
+CODEOWNERS.md
+SUPPORT.md
+tslint.json
+jest.setup.js
+.gitignore

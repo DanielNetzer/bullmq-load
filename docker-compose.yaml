@@ -1,0 +1,46 @@
+version: '3.8'
+services:
+  cache:
+      image: redis:latest
+      restart: always
+      ports:
+        - '6379:6379'
+      command: redis-server --loglevel warning
+      volumes: 
+        - cache:/data
+  producer:
+    container_name: producer
+    build:
+      context: ./
+      dockerfile: Dockerfile.producer
+    image: producer:latest
+    depends_on:
+      - cache
+    ports:
+      - 3000:3000
+    environment:
+      NODE_ENV: production
+      REDIS_HOST: cache
+      REDIS_PORT: 6379
+    links:
+      - cache
+    volumes:
+      - ./:/src
+  consumer:
+    build:
+      context: ./
+      dockerfile: Dockerfile.consumer
+    image: consumer:latest
+    depends_on:
+      - cache
+    environment:
+      NODE_ENV: production
+      REDIS_HOST: cache
+      REDIS_PORT: 6379
+    links:
+      - cache
+    volumes:
+      - ./:/src
+volumes:
+  cache:
+    driver: local
