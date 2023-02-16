@@ -1,13 +1,35 @@
 version: '3.8'
 services:
-  cache:
-      image: redis:latest
-      restart: always
-      ports:
-        - '6379:6379'
-      command: redis-server --loglevel warning
-      volumes: 
-        - cache:/data
+  # cache:
+  #     image: redis:latest
+  #     restart: always
+  #     ports:
+  #       - '6379:6379'
+  #     command: redis-server --loglevel warning
+  #     volumes: 
+  #       - cache:/data
+  # dragonfly:
+  #   image: 'docker.dragonflydb.io/dragonflydb/dragonfly'
+  #   ulimits:
+  #     memlock: -1
+  #   ports:
+  #     - 6379:6379
+  #   # For better performance, consider `host` mode instead `port` to avoid docker NAT.
+  #   # `host` mode is NOT currently supported in Swarm Mode.
+  #   # https://docs.docker.com/compose/compose-file/compose-file-v3/#network_mode
+  #   # network_mode: 'host'
+  #   volumes:
+  #     - dragonflydata:/data
+  keydb:
+    image: 'eqalpha/keydb'
+    ports:
+      - 6379:6379
+    # For better performance, consider `host` mode instead `port` to avoid docker NAT.
+    # `host` mode is NOT currently supported in Swarm Mode.
+    # https://docs.docker.com/compose/compose-file/compose-file-v3/#network_mode
+    # network_mode: 'host'
+    volumes:
+      - keydb:/data
   producer:
     container_name: producer
     build:
@@ -15,15 +37,15 @@ services:
       dockerfile: Dockerfile.producer
     image: producer:latest
     depends_on:
-      - cache
+      - keydb
     ports:
       - 3000:3000
     environment:
       NODE_ENV: production
-      REDIS_HOST: cache
+      REDIS_HOST: keydb
       REDIS_PORT: 6379
     links:
-      - cache
+      - keydb
     volumes:
       - ./:/src
   consumer:
@@ -32,15 +54,17 @@ services:
       dockerfile: Dockerfile.consumer
     image: consumer:latest
     depends_on:
-      - cache
+      - keydb
     environment:
       NODE_ENV: production
-      REDIS_HOST: cache
-      REDIS_PORT: 6379
+      REDIS_HOST: keydb
+      REDIS_PORT: 6378
     links:
-      - cache
+      - keydb
     volumes:
       - ./:/src
 volumes:
   cache:
     driver: local
+  keydb:
+  dragonflydata:

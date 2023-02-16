@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "bullmq": "^3.6.5",
-    "ioredis": "^5.3.1"
+    "ioredis": "^5.3.1",
+    "redis": "^4.6.4"
   }
 }
